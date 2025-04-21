@@ -1,6 +1,7 @@
 name = "webagent"
 main = "dist/index.mjs"
 compatibility_date = "2023-10-30"
+account_id = "2422a782bc0ae2970c01ce7ccb3aea86"
 
 [build]
 command = "npm run build"
