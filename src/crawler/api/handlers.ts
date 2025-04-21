@@ -12,7 +12,11 @@ import {
 	parseJsExtractionOptions,
 	parseSelectors
 } from './options';
+import { XMLParser, XMLValidator } from 'fast-xml-parser'; // <-- ADDED: Import XML Parser
 import type { Env } from '../types'; // Adjust path if needed, ensure Env includes BROWSER
+
+// ... (keep existing handleHtmlExtraction, handleTextExtraction, etc. functions) ...
+// ... (previous handlers like handleHtmlExtraction, handleTextExtraction etc. remain here) ...
 
 /**
  * API handler for HTML extraction
@@ -115,13 +119,13 @@ export async function handleJsExtraction(request: Request, env: Env): Promise<Re
 				}
 			} catch (e) {
 				if (e instanceof SyntaxError) {
-    // JSON parsing failed for POST body (custom script)
-    console.warn("Error parsing request body for custom script:", e);
-    throw new ValidationError("Invalid JSON in request body for custom script");
-} else {
-    // Re-throw other errors
-    throw e;
-}
+					// JSON parsing failed for POST body (custom script)
+					console.warn("Error parsing request body for custom script:", e);
+					throw new ValidationError("Invalid JSON in request body for custom script");
+				} else {
+					// Re-throw other errors
+					throw e;
+				}
 			}
 		}
 
@@ -193,7 +197,7 @@ export async function handleCustomJsExecution(request: Request, env: Env): Promi
 		try {
 			// UPDATED: Use standard request object and check body
 			if (!request.body) {
-				 throw new ValidationError('Request body is required for custom script execution');
+				throw new ValidationError('Request body is required for custom script execution');
 			}
 			const body = await request.json<{ script?: string; args?: any[] }>(); // Use standard request.json()
 			if (!body || typeof body.script !== 'string') {
@@ -221,5 +225,61 @@ export async function handleCustomJsExecution(request: Request, env: Env): Promi
 		});
 	} catch (error) {
 		return handleApiError(error); // UPDATED
+	}
+}
+
+
+/**
+ * API handler for XML Sitemap URL extraction
+ */
+export async function handleSitemapRequest(request: Request, env: Env): Promise<Response> {
+	try {
+		const url = new URL(request.url);
+		const sitemapUrl = validateUrl(url.searchParams.get('url')); // Re-use validation
+
+		// 1. Fetch the sitemap
+		let response: globalThis.Response;
+		try {
+			response = await fetch(sitemapUrl);
+			if (!response.ok) {
+				throw new Error(`Failed to fetch sitemap (${response.status}): ${await response.text()}`);
+			}
+		} catch (fetchError) {
+			console.error("Sitemap fetch error:", fetchError);
+			return handleApiError(new Error(`Could not fetch sitemap URL: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`, { cause: fetchError }));
+		}
+
+		const xmlText = await response.text();
+
+		// 2. Parse the XML
+		// Consider making parser options configurable if needed later
+		const xmlParserOptions = {
+			ignoreAttributes: true, // We only need the <loc> tag value
+			parseTagValue: true,
+			trimValues: true,
+			isArray: (name: string, jpath: string) => jpath === 'urlset.url', // Ensure urlset.url is always an array
+		};
+		const parser = new XMLParser(xmlParserOptions);
+		let jsonObj: any;
+		try {
+			jsonObj = parser.parse(xmlText);
+		} catch (parseError) {
+			console.error("Sitemap XML parsing error:", parseError);
+			return handleApiError(new ValidationError(`Failed to parse sitemap XML: ${parseError instanceof Error ? parseError.message : String(parseError)}`, 400));
+		}
+
+		// 3. Extract URLs
+		// Common structure is <urlset><url><loc>...</loc></url>...</urlset>
+		// Handle potential variations or missing elements
+		const urls: string[] = jsonObj?.urlset?.url?.map((entry: any) => entry?.loc).filter((loc: any): loc is string => typeof loc === 'string') || [];
+
+		// 4. Return Response
+		return new Response(JSON.stringify({ urls }), {
+			headers: { 'Content-Type': 'application/json' }
+		});
+
+	} catch (error) {
+		// Catch URL validation errors or other unexpected issues
+		return handleApiError(error);
 	}
 }
