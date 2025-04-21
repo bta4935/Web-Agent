@@ -1,0 +1,20 @@
+name = "webscraper"
+main = "dist/index.js"
+compatibility_date = "2023-10-30"
+
+[build]
+command = "npm run build"
+watch_dir = "src"
+
+[vars]
+# Define your environment variables here
+# EXAMPLE_VAR = "example-value"
+
+# Uncomment for production environment
+# [env.production]
+# name = "webscraper-prod"
+# route = "your-domain.com/*"
+
+# Uncomment for development environment
+# [env.development]
+# name = "webscraper-dev"

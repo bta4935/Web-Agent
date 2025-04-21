@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Complex test page for advanced crawler testing">
+  <meta name="keywords" content="testing, crawler, complex, extraction">
+  <meta property="og:title" content="Complex Crawler Test Page">
+  <meta property="og:description" content="A page with complex structures for testing advanced extraction">
+  <meta property="og:image" content="https://example.com/image.jpg">
+  <title>Complex Crawler Test Page</title>
+  <style>
+    /* Base styles */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    /* Visibility classes */
+    .hidden { display: none !important; }
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+    /* Component styles */
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .flex-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .flex-item {
+      flex: 1 1 200px;
+      padding: 15px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+    }
+    /* Animation for dynamic content */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .fade-in {
+      animation: fadeIn 1s ease-in;
+    }
+    /* Custom data attributes styling */
+    [data-importance="high"] { border-left: 4px solid #ff5722; padding-left: 10px; }
+    [data-importance="medium"] { border-left: 4px solid #ff9800; padding-left: 10px; }
+    [data-importance="low"] { border-left: 4px solid #8bc34a; padding-left: 10px; }
+    /* Responsive iframe container */
+    .iframe-container {
+      position: relative;
+      overflow: hidden;
+      padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    }
+    .iframe-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+  </style>
+  <script>
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize dynamic content
+      initDynamicContent();
+      
+      // Set up event listeners
+      setupEventListeners();
+      
+      // Load data asynchronously
+      loadAsyncData();
+    });
+    
+    function initDynamicContent() {
+      // Create shadow DOM element
+      const shadowHost = document.getElementById('shadow-host');
+      const shadowRoot = shadowHost.attachShadow({mode: 'open'});
+      shadowRoot.innerHTML = `
+        <style>
+          p { color: blue; font-weight: bold; }
+        </style>
+        <p>This content is inside a Shadow DOM</p>
+        <div class="shadow-item">Shadow DOM item 1</div>
+        <div class="shadow-item">Shadow DOM item 2</div>
+      `;
+      
+      // Add content to slots
+      document.querySelectorAll('[data-slot-content]').forEach(element => {
+        const slotName = element.getAttribute('data-slot-content');
+        const targetSlot = document.querySelector(`slot[name="${slotName}"]`);
+        if (targetSlot) {
+          const slotParent = targetSlot.parentNode;
+          slotParent.replaceChild(element, targetSlot);
+        }
+      });
+      
+      // Lazy load images
+      setTimeout(() => {
+        document.querySelectorAll('.lazy-image').forEach(img => {
+          const src = img.getAttribute('data-src');
+          if (src) {
+            img.src = src;
+            img.classList.add('fade-in');
+          }
+        });
+      }, 1000);
+    }
+    
+    function setupEventListeners() {
+      // Toggle visibility of expandable sections
+      document.querySelectorAll('.expandable-header').forEach(header => {
+        header.addEventListener('click', function() {
+          const content = this.nextElementSibling;
+          if (content.classList.contains('expandable-content')) {
+            content.classList.toggle('hidden');
+            this.classList.toggle('expanded');
+          }
+        });
+      });
+      
+      // Add tab functionality
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', function() {
+          // Remove active class from all buttons and panels
+          document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active');
+          });
+          document.querySelectorAll('.tab-panel').forEach(panel => {
+            panel.classList.add('hidden');
+          });
+          
+          // Add active class to clicked button and show corresponding panel
+          this.classList.add('active');
+          const panelId = this.getAttribute('data-panel');
+          document.getElementById(panelId).classList.remove('hidden');
+        });
+      });
+    }
+    
+    function loadAsyncData() {
+      // Simulate async data loading
+      setTimeout(() => {
+        const asyncContainer = document.getElementById('async-data-container');
+        if (asyncContainer) {
+          asyncContainer.innerHTML = `
+            <div class="card" data-async="true">
+              <h3>Asynchronously Loaded Content</h3>
+              <p>This content was loaded asynchronously after page load.</p>
+              <ul>
+                <li>Async Item 1</li>
+                <li>Async Item 2</li>
+                <li>Async Item 3</li>
+              </ul>
+            </div>
+          `;
+        }
+      }, 1500);
+    }
+    
+    // Function to be called via evaluate
+    function extractCustomData() {
+      return {
+        pageInfo: {
+          title: document.title,
+          url: window.location.href,
+          metadata: {
+            description: document.querySelector('meta[name="description"]')?.content,
+            keywords: document.querySelector('meta[name="keywords"]')?.content
+          }
+        },
+        visibleText: Array.from(document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li'))
+          .filter(el => {
+            const style = window.getComputedStyle(el);
+            return style.display !== 'none' && style.visibility !== 'hidden';
+          })
+          .map(el => el.textContent.trim()),
+        customElements: {
+          cards: Array.from(document.querySelectorAll('.card')).map(card => ({
+            title: card.querySelector('h3')?.textContent,
+            content: card.querySelector('p')?.textContent,
+            importance: card.getAttribute('data-importance')
+          })),
+          dataAttributes: Array.from(document.querySelectorAll('[data-custom]')).map(el => ({
+            element: el.tagName.toLowerCase(),
+            value: el.getAttribute('data-custom'),
+            text: el.textContent.trim()
+          }))
+        }
+      };
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <header class="card">
+      <h1>Complex Crawler Test Page</h1>
+      <p>This page contains complex HTML structures and JavaScript interactions for testing advanced extraction capabilities.</p>
+      <nav>
+        <ul class="flex-container">
+          <li><a href="#semantic-section">Semantic Structures</a></li>
+          <li><a href="#dynamic-section">Dynamic Content</a></li>
+          <li><a href="#advanced-section">Advanced Features</a></li>
+          <li><a href="#responsive-section">Responsive Elements</a></li>
+        </ul>
+      </nav>
+    </header>
+    
+    <main>
+      <!-- Semantic HTML Section -->
+      <section id="semantic-section" class="card">
+        <h2>Semantic HTML Structures</h2>
+        
+        <article class="card" data-importance="high" data-custom="featured-article">
+          <h3>Featured Article</h3>
+          <p>This is a semantically structured article with high importance.</p>
+          <figure>
+            <img src="https://via.placeholder.com/400x200" alt="Featured image">
+            <figcaption>A featured image with caption</figcaption>
+          </figure>
+          <aside>
+            <h4>Related Information</h4>
+            <p>This is additional information related to the article.</p>
+          </aside>
+          <footer>
+            <p>Article metadata: <time datetime="2025-04-20">April 20, 2025</time></p>
+          </footer>
+        </article>
+        
+        <div class="grid">
+          <article class="card" data-importance="medium">
+            <h3>Structured Content 1</h3>
+            <p>This is a medium importance article in a grid layout.</p>
+            <details>
+              <summary>Click to show more information</summary>
+              <p>This content is initially hidden in a details element.</p>
+              <ul>
+                <li>Detail item 1</li>
+                <li>Detail item 2</li>
+              </ul>
+            </details>
+          </article>
+          
+          <article class="card" data-importance="medium">
+            <h3>Structured Content 2</h3>
+            <p>Another medium importance article with structured data.</p>
+            <table border="1">
+              <caption>Structured Data Table</caption>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td>Item Alpha</td>
+                  <td data-custom="numeric">500</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>Item Beta</td>
+                  <td data-custom="numeric">750</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="2">Total</td>
+                  <td>1250</td>
+                </tr>
+              </tfoot>
+            </table>
+          </article>
+          
+          <article class="card" data-importance="low">
+            <h3>Structured Content 3</h3>
+            <p>A low importance article with a definition list.</p>
+            <dl>
+              <dt>Term 1</dt>
+              <dd>Definition of term 1</dd>
+              <dt>Term 2</dt>
+              <dd>Definition of term 2</dd>
+              <dt>Term 3</dt>
+              <dd>Definition of term 3</dd>
+            </dl>
+          </article>
+        </div>
+      </section>
+      
+      <!-- Dynamic Content Section -->
+      <section id="dynamic-section" class="card">
+        <h2>Dynamic Content</h2>
+        
+        <div class="card">
+          <h3>Shadow DOM Example</h3>
+          <p>The content below is rendered in a Shadow DOM:</p>
+          <div id="shadow-host"></div>
+        </div>
+        
+        <div class="card">
+          <h3>Lazy-Loaded Images</h3>
+          <div class="flex-container">
+            <div class="flex-item">
+              <img class="lazy-image" data-src="https://via.placeholder.com/150" alt="Lazy loaded image 1" width="150" height="150">
+              <p>This image loads after page load</p>
+            </div>
+            <div class="flex-item">
+              <img class="lazy-image" data-src="https://via.placeholder.com/150" alt="Lazy loaded image 2" width="150" height="150">
+              <p>This image also loads after page load</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h3>Expandable Content</h3>
+          <div class="expandable-header">Click to expand section 1</div>
+          <div class="expandable-content hidden">
+            <p>This content is initially hidden and can be toggled.</p>
+            <ul>
+              <li>Expandable item 1</li>
+              <li>Expandable item 2</li>
+            </ul>
+          </div>
+          
+          <div class="expandable-header">Click to expand section 2</div>
+          <div class="expandable-content hidden">
+            <p>Another expandable section with different content.</p>
+            <ol>
+              <li>Ordered item 1</li>
+              <li>Ordered item 2</li>
+            </ol>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h3>Tabbed Interface</h3>
+          <div class="tab-buttons">
+            <button class="tab-button active" data-panel="tab-panel-1">Tab 1</button>
+            <button class="tab-button" data-panel="tab-panel-2">Tab 2</button>
+            <button class="tab-button" data-panel="tab-panel-3">Tab 3</button>
+          </div>
+          <div class="tab-panels">
+            <div id="tab-panel-1" class="tab-panel">
+              <p>Content for Tab 1</p>
+              <ul>
+                <li>Tab 1 Item 1</li>
+                <li>Tab 1 Item 2</li>
+              </ul>
+            </div>
+            <div id="tab-panel-2" class="tab-panel hidden">
+              <p>Content for Tab 2</p>
+              <ul>
+                <li>Tab 2 Item 1</li>
+                <li>Tab 2 Item 2</li>
+              </ul>
+            </div>
+            <div id="tab-panel-3" class="tab-panel hidden">
+              <p>Content for Tab 3</p>
+              <ul>
+                <li>Tab 3 Item 1</li>
+                <li>Tab 3 Item 2</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h3>Asynchronously Loaded Data</h3>
+          <p>The content below will be loaded asynchronously:</p>
+          <div id="async-data-container">
+            <p>Loading data...</p>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Advanced Features Section -->
+      <section id="advanced-section" class="card">
+        <h2>Advanced Features</h2>
+        
+        <div class="card">
+          <h3>Web Components</h3>
+          <template id="custom-template">
+            <style>
+              .template-content { border: 1px dashed #666; padding: 10px; margin: 10px 0; }
+            </style>
+            <div class="template-content">
+              <slot name="header">Default Header</slot>
+              <div>
+                <slot>Default content</slot>
+              </div>
+            </div>
+          </template>
+          
+          <div>
+            <h4>Template Content</h4>
+            <div data-slot-content="header">
+              <h5>Custom Template Header</h5>
+            </div>
+            <p data-slot-content>This content will be inserted into the default slot</p>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h3>SVG Content</h3>
+          <svg width="200" height="100" viewBox="0 0 200 100">
+            <rect x="10" y="10" width="180" height="80" fill="#f0f0f0" stroke="#333" />
+            <circle cx="50" cy="50" r="30" fill="#ff9800" />
+            <text x="100" y="50" text-anchor="middle" dominant-baseline="middle" fill="#333">SVG Text</text>
+          </svg>
+        </div>
+        
+        <div class="card">
+          <h3>MathML Example</h3>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <mrow>
+              <mi>E</mi>
+              <mo>=</mo>
+              <mi>m</mi>
+              <msup>
+                <mi>c</mi>
+                <mn>2</mn>
+              </msup>
+            </mrow>
+          </math>
+        </div>
+        
+        <div class="card">
+          <h3>Nested Elements with Custom Data Attributes</h3>
+          <div class="nested-level-1" data-depth="1" data-custom="level-1">
+            <p>Level 1 content</p>
+            <div class="nested-level-2" data-depth="2" data-custom="level-2">
+              <p>Level 2 content</p>
+              <div class="nested-level-3" data-depth="3" data-custom="level-3">
+                <p>Level 3 content</p>
+                <div class="nested-level-4" data-depth="4" data-custom="level-4">
+                  <p>Level 4 content</p>
+                  <div class="nested-level-5 hidden" data-depth="5" data-custom="level-5">
+                    <p>Level 5 content (hidden)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Responsive Elements Section -->
+      <section id="responsive-section" class="card">
+        <h2>Responsive Elements</h2>
+        
+        <div class="card">
+          <h3>Responsive Images</h3>
+          <picture>
+            <source media="(min-width: 800px)" srcset="https://via.placeholder.com/800x400">
+            <source media="(min-width: 400px)" srcset="https://via.placeholder.com/400x200">
+            <img src="https://via.placeholder.com/200x100" alt="Responsive image">
+          </picture>
+        </div>
+        
+        <div class="card">
+          <h3>Embedded Content</h3>
+          <div class="iframe-container">
+            <iframe src="about:blank" title="Embedded frame" allowfullscreen></iframe>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h3>Media Elements</h3>
+          <audio controls>
+            <source src="about:blank" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>
+          <video width="320" height="240" controls poster="https://via.placeholder.com/320x240">
+            <source src="about:blank" type="video/mp4">
+            Your browser does not support the video element.
+          </video>
+        </div>
+      </section>
+    </main>
+    
+    <footer class="card">
+      <p>&copy; 2025 Complex Crawler Test Page</p>
+      <p class="visually-hidden">This content is visually hidden</p>
+      <p class="hidden">This content is completely hidden</p>
+    </footer>
+  </div>
+</body>
+</html>

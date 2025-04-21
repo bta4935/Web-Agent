@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Local test site for crawler testing">
+  <meta property="og:title" content="Crawler Test Site">
+  <meta property="og:description" content="A local test site for crawler testing">
+  <title>Crawler Test Site</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    .dynamic-content {
+      background-color: #f0f0f0;
+      padding: 10px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Crawler Test Site</h1>
+    <p>This is a local test site for testing the Puppeteer Web Crawler</p>
+    <nav>
+      <ul>
+        <li><a href="#html">HTML Extraction</a></li>
+        <li><a href="#text">Text Extraction</a></li>
+        <li><a href="#selector">Selector Extraction</a></li>
+        <li><a href="#js">JavaScript Extraction</a></li>
+      </ul>
+    </nav>
+  </header>
+  
+  <main>
+    <section id="html" class="card">
+      <h2>HTML Extraction</h2>
+      <p>This section tests the HTML extraction capability of the crawler.</p>
+      <div class="example">
+        <h3>Example HTML Structure</h3>
+        <pre><code>&lt;div class="example"&gt;
+  &lt;h3&gt;Example HTML Structure&lt;/h3&gt;
+  &lt;pre&gt;&lt;code&gt;...&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;</code></pre>
+      </div>
+    </section>
+    
+    <section id="text" class="card">
+      <h2>Text Extraction</h2>
+      <p>This section tests the text extraction capability of the crawler.</p>
+      <p>The crawler should be able to extract all visible text content while ignoring hidden elements.</p>
+      <p class="hidden">This text is hidden and should not be extracted.</p>
+      <ul>
+        <li>List item 1</li>
+        <li>List item 2</li>
+        <li>List item 3</li>
+      </ul>
+    </section>
+    
+    <section id="selector" class="card">
+      <h2>Selector Extraction</h2>
+      <p>This section tests the selector-based extraction capability of the crawler.</p>
+      <div class="example-elements">
+        <div class="item" data-id="1">Item 1</div>
+        <div class="item" data-id="2">Item 2</div>
+        <div class="item" data-id="3">Item 3</div>
+      </div>
+      <table border="1">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>First Item</td>
+            <td>100</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Second Item</td>
+            <td>200</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    
+    <section id="js" class="card">
+      <h2>JavaScript Extraction</h2>
+      <p>This section tests the JavaScript execution capability of the crawler.</p>
+      <div id="dynamic-content" class="dynamic-content">
+        This content will be replaced by JavaScript.
+      </div>
+      <button id="load-data">Load Dynamic Content</button>
+    </section>
+  </main>
+  
+  <footer>
+    <p>&copy; 2025 Crawler Test Site</p>
+  </footer>
+  
+  <script>
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add event listener to the button
+      document.getElementById('load-data').addEventListener('click', function() {
+        loadDynamicContent();
+      });
+      
+      // Automatically load dynamic content after 2 seconds
+      setTimeout(loadDynamicContent, 2000);
+    });
+    
+    // Function to load dynamic content
+    function loadDynamicContent() {
+      const dynamicContent = document.getElementById('dynamic-content');
+      dynamicContent.innerHTML = `
+        <h3>Dynamically Loaded Content</h3>
+        <p>This content was loaded by JavaScript at ${new Date().toLocaleTimeString()}</p>
+        <ul id="dynamic-list">
+          <li>Dynamic item 1</li>
+          <li>Dynamic item 2</li>
+          <li>Dynamic item 3</li>
+        </ul>
+      `;
+    }
+  </script>
+</body>
+</html>
