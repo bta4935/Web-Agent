@@ -129,7 +129,7 @@ export default {
           // Extract HTML content
           result = await crawler.extractHtml(
             requestData.url,
-            requestData.options as CrawlerOptions
+            requestData.options as ExtractionOptions
           );
           break;
           

@@ -12,7 +12,7 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "lib": ["ES2022", "DOM"],
-    "types": ["node", "@cloudflare/workers-types", "vitest/globals", "@types/jest"]
+    "types": ["node", "@cloudflare/workers-types", "vitest/globals"]
   },
   "exclude": ["node_modules", "dist"],
   "include": ["src/**/*"]

@@ -3,6 +3,8 @@ type Env = {
 	SECRET2?: string;
 };
 
+import { headersToObject } from '../../utils/headers-helper';
+
 export default {
 	fetch(request: Request, env: Env) {
 		const url = new URL(request.url);
@@ -19,7 +21,7 @@ export default {
 
 		return Response.json({
 			...request,
-			headers: Object.fromEntries(request.headers),
+			headers: headersToObject(request.headers),
 		});
 	},
 };

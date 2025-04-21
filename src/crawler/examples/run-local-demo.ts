@@ -86,14 +86,31 @@ async function runLocalCrawlerDemo() {
     
     if (selectorResult.elements) {
       const elements = selectorResult.elements;
-      console.log(`Number of selector results: ${elements.length}`);
       
-      // Display the first result for each selector
-      for (const element of elements) {
-        console.log(`\nSelector: ${element.selector}`);
-        console.log(`Found ${element.results.length} elements`);
-        if (element.results.length > 0) {
-          console.log(`First element text: ${element.results[0].text}`);
+      // Check if elements is an array (ElementExtractionResult[])
+      if (Array.isArray(elements)) {
+        console.log(`Number of selector results: ${elements.length}`);
+        
+        // Display the first result for each selector
+        for (const element of elements) {
+          console.log(`\nSelector: ${element.selector}`);
+          console.log(`Found ${element.results.length} elements`);
+          if (element.results.length > 0) {
+            console.log(`First element text: ${element.results[0].text}`);
+          }
+        }
+      } else {
+        // Handle Record<string, string[]> case
+        const selectorCount = Object.keys(elements).length;
+        console.log(`Number of selector results: ${selectorCount}`);
+        
+        // Display results for each selector
+        for (const [selector, results] of Object.entries(elements)) {
+          console.log(`\nSelector: ${selector}`);
+          console.log(`Found ${results.length} elements`);
+          if (results.length > 0) {
+            console.log(`First element text: ${results[0]}`);
+          }
         }
       }
     }
@@ -110,7 +127,7 @@ async function runLocalCrawlerDemo() {
     
     // Example 5: Execute custom JavaScript
     console.log('\n--- Example 5: Custom JavaScript Execution ---');
-    const customJsResult = await crawler.extractCustomJs(localUrl, `
+    const customJsResult = await crawler.executeCustomFunction(localUrl, `
       // Wait for dynamic content to load
       await new Promise(resolve => setTimeout(resolve, 3000));
       
