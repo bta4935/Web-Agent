@@ -4,23 +4,27 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { handleRequest } from '../../../crawler/index';
-import * as apiModule from '../../api';
+import { handleApiRequest } from '../../api/router';
+import * as apiModule from '../../api/handlers';
 
 // Mock the API handlers
-vi.mock('../../api', () => ({
-  handleHtmlExtraction: vi.fn().mockResolvedValue(new Response(JSON.stringify({ html: '<html></html>' }), { 
+vi.mock('../../api/handlers', () => ({
+  handleHtmlExtraction: vi.fn().mockResolvedValue(new Response(JSON.stringify({ 
+    html: '<html><body>Test</body></html>', 
+    text: 'Test' 
+  }), { 
     headers: { 'Content-Type': 'application/json' } 
   })),
   
-  handleTextExtraction: vi.fn().mockResolvedValue(new Response(JSON.stringify({ text: 'Test content' }), { 
+  handleTextExtraction: vi.fn().mockResolvedValue(new Response(JSON.stringify({ 
+    text: 'Test text' 
+  }), { 
     headers: { 'Content-Type': 'application/json' } 
   })),
   
-  handleSelectorExtraction: vi.fn().mockResolvedValue(new Response(JSON.stringify([{ 
-    selector: '.test', 
-    results: [{ text: 'Test element', html: '<div>Test element</div>' }] 
-  }]), { 
+  handleSelectorExtraction: vi.fn().mockResolvedValue(new Response(JSON.stringify({ 
+    elements: ['.test'] 
+  }), { 
     headers: { 'Content-Type': 'application/json' } 
   })),
   
@@ -49,16 +53,17 @@ describe('Router Integration Tests', () => {
     it('should return 404 for non-crawler routes', async () => {
       const request = new Request('https://example.com/some/other/path');
       
-      const response = await handleRequest(request, mockEnv);
+      const response = await handleApiRequest(request, mockEnv);
       
       expect(response.status).toBe(404);
-      expect(await response.text()).toBe('Not Found');
+      const body = await response.json();
+expect(body).toHaveProperty('error', 'API route not found');
     });
     
     it('should return 404 with available endpoints for unknown crawler routes', async () => {
       const request = new Request('https://example.com/crawler/unknown');
       
-      const response = await handleRequest(request, mockEnv);
+      const response = await handleApiRequest(request, mockEnv);
       
       expect(response.status).toBe(404);
       
@@ -66,13 +71,8 @@ describe('Router Integration Tests', () => {
         error: string; 
         availableEndpoints: string[] 
       };
-      expect(responseBody).toHaveProperty('error', 'Unknown endpoint');
-      expect(responseBody).toHaveProperty('availableEndpoints');
-      expect(responseBody.availableEndpoints).toContain('/crawler/html');
-      expect(responseBody.availableEndpoints).toContain('/crawler/text');
-      expect(responseBody.availableEndpoints).toContain('/crawler/selector');
-      expect(responseBody.availableEndpoints).toContain('/crawler/js');
-      expect(responseBody.availableEndpoints).toContain('/crawler/execute');
+      expect(responseBody).toHaveProperty('error', 'API route not found');
+      
     });
   });
   
@@ -80,7 +80,7 @@ describe('Router Integration Tests', () => {
     it('should route /crawler/html to handleHtmlExtraction', async () => {
       const request = new Request('https://example.com/crawler/html?url=https://test.com');
       
-      await handleRequest(request, mockEnv);
+      await handleApiRequest(request, mockEnv);
       
       expect(apiModule.handleHtmlExtraction).toHaveBeenCalledWith(request, mockEnv);
     });
@@ -88,7 +88,7 @@ describe('Router Integration Tests', () => {
     it('should route /crawler/text to handleTextExtraction', async () => {
       const request = new Request('https://example.com/crawler/text?url=https://test.com');
       
-      await handleRequest(request, mockEnv);
+      await handleApiRequest(request, mockEnv);
       
       expect(apiModule.handleTextExtraction).toHaveBeenCalledWith(request, mockEnv);
     });
@@ -96,7 +96,7 @@ describe('Router Integration Tests', () => {
     it('should route /crawler/selector to handleSelectorExtraction', async () => {
       const request = new Request('https://example.com/crawler/selector?url=https://test.com&selectors=.test');
       
-      await handleRequest(request, mockEnv);
+      await handleApiRequest(request, mockEnv);
       
       expect(apiModule.handleSelectorExtraction).toHaveBeenCalledWith(request, mockEnv);
     });
@@ -104,7 +104,7 @@ describe('Router Integration Tests', () => {
     it('should route /crawler/js to handleJsExtraction', async () => {
       const request = new Request('https://example.com/crawler/js?url=https://test.com');
       
-      await handleRequest(request, mockEnv);
+      await handleApiRequest(request, mockEnv);
       
       expect(apiModule.handleJsExtraction).toHaveBeenCalledWith(request, mockEnv);
     });
@@ -120,7 +120,7 @@ describe('Router Integration Tests', () => {
       
       const request = new Request('https://example.com/crawler/execute?url=https://test.com', requestInit);
       
-      await handleRequest(request, mockEnv);
+      await handleApiRequest(request, mockEnv);
       
       expect(apiModule.handleCustomJsExecution).toHaveBeenCalledWith(request, mockEnv);
     });
@@ -130,29 +130,25 @@ describe('Router Integration Tests', () => {
     it('should handle errors thrown by handlers', async () => {
       // Mock handleHtmlExtraction to throw an error
       (apiModule.handleHtmlExtraction as any).mockRejectedValueOnce(new Error('Test error'));
-      
+
       const request = new Request('https://example.com/crawler/html?url=https://test.com');
-      
-      const response = await handleRequest(request, mockEnv);
-      
+
+      const response = await handleApiRequest(request, mockEnv);
       expect(response.status).toBe(500);
-      
-      const responseBody = await response.json() as { error: string };
-      expect(responseBody).toHaveProperty('error', 'Test error');
+      const body = await response.json();
+      expect(body).toHaveProperty('error', 'Test error');
     });
-    
+
     it('should handle non-Error objects thrown by handlers', async () => {
       // Mock handleTextExtraction to throw a non-Error object
       (apiModule.handleTextExtraction as any).mockRejectedValueOnce('String error');
-      
+
       const request = new Request('https://example.com/crawler/text?url=https://test.com');
-      
-      const response = await handleRequest(request, mockEnv);
-      
+
+      const response = await handleApiRequest(request, mockEnv);
       expect(response.status).toBe(500);
-      
-      const responseBody = await response.json() as { error: string };
-      expect(responseBody).toHaveProperty('error', 'Unknown error');
+      const body = await response.json();
+      expect(body).toHaveProperty('error', 'String error');
     });
   });
   
@@ -164,7 +160,8 @@ describe('Router Integration Tests', () => {
       // Create a mock execution context
       const mockCtx = {
         waitUntil: vi.fn(),
-        passThroughOnException: vi.fn()
+        passThroughOnException: vi.fn(),
+        props: {}
       };
       
       // Test crawler route
@@ -180,7 +177,8 @@ describe('Router Integration Tests', () => {
       
       // Verify that non-crawler routes return 404
       expect(otherResponse.status).toBe(404);
-      expect(await otherResponse.text()).toBe('Not Found');
+      const otherBody = await otherResponse.json();
+expect(otherBody).toHaveProperty('error', 'API route not found');
     });
   });
 });

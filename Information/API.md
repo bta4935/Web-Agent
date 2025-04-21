@@ -18,33 +18,18 @@ http://localhost:8787
 
 ## API Endpoints
 
-The crawler provides the following API endpoints in two styles: RESTful and legacy query parameter-based. Both styles are fully supported and functionally equivalent.
+The crawler provides the following API endpoints. **Paths must match exactly (no trailing slashes)** and use the correct HTTP method as shown below.
 
 ### HTML Extraction
 
 Extract the full HTML content of a web page.
 
-**Endpoint:** `/crawler/html`
-
-**Method:** `GET` or `POST`
-
-**Query Parameters:**
-- `url` (required): The URL of the web page to crawl
-- `includeMetadata` (optional): Set to `true` to include page metadata (title, description, etc.)
-- `removeScripts` (optional): Set to `true` to remove script tags from the HTML
-- `removeStyles` (optional): Set to `true` to remove style tags from the HTML
-- `timeout` (optional): Timeout in milliseconds (default: 30000)
-- `waitUntil` (optional): Navigation wait strategy ('load', 'domcontentloaded', 'networkidle0', 'networkidle2')
-- `userAgent` (optional): Custom user agent string
-- `viewportWidth` (optional): Viewport width in pixels
-- `viewportHeight` (optional): Viewport height in pixels
-- `blockImages` (optional): Set to `true` to block image loading
-- `blockFonts` (optional): Set to `true` to block font loading
-- `blockCSS` (optional): Set to `true` to block CSS loading
+**Endpoint:** `/crawler/html`  
+**Method:** `GET` (**no trailing slash!**)
 
 **Example Request:**
 ```bash
-curl -X GET "http://localhost:8787/crawler/html?url=https://example.com&includeMetadata=true"
+curl -X GET "http://localhost:8787/crawler/html?url=https://example.com"
 ```
 
 **Example Response:**
@@ -65,21 +50,12 @@ curl -X GET "http://localhost:8787/crawler/html?url=https://example.com&includeM
 
 Extract only the visible text content from a web page.
 
-**Endpoint:** `/crawler/text`
-
-**Method:** `GET` or `POST`
-
-**Query Parameters:**
-- `url` (required): The URL of the web page to crawl
-- `preserveNewlines` (optional): Set to `true` to preserve newline characters
-- `includeHiddenText` (optional): Set to `true` to include hidden text
-- `timeout` (optional): Timeout in milliseconds (default: 30000)
-- `waitUntil` (optional): Navigation wait strategy ('load', 'domcontentloaded', 'networkidle0', 'networkidle2')
-- Other crawler options as described in HTML extraction
+**Endpoint:** `/crawler/text`  
+**Method:** `GET` (**no trailing slash!**)
 
 **Example Request:**
 ```bash
-curl -X GET "http://localhost:8787/crawler/text?url=https://example.com&preserveNewlines=true"
+curl -X GET "http://localhost:8787/crawler/text?url=https://example.com"
 ```
 
 **Example Response:**
@@ -96,17 +72,8 @@ curl -X GET "http://localhost:8787/crawler/text?url=https://example.com&preserve
 
 Extract specific elements from a web page using CSS selectors.
 
-**Endpoint:** `/crawler/selector`
-
-**Method:** `GET` or `POST`
-
-**Query Parameters:**
-- `url` (required): The URL of the web page to crawl
-- `selectors` (required): CSS selectors to extract, as a comma-separated list or JSON array
-- `includeAttributes` (optional): Set to `true` to include element attributes
-- `includeHTML` (optional): Set to `true` to include element HTML
-- `includePosition` (optional): Set to `true` to include element position information
-- Other crawler options as described in HTML extraction
+**Endpoint:** `/crawler/selector`  
+**Method:** `GET` (**no trailing slash!**)
 
 **Example Request:**
 ```bash
@@ -152,30 +119,18 @@ curl -X GET "http://localhost:8787/crawler/selector?url=https://example.com&sele
 }
 ```
 
-### JavaScript Execution
+### JavaScript Extraction
 
-Extract content after JavaScript execution on the page.
+Extract content after running JavaScript on the page (e.g., after client-side rendering).
 
-**Endpoint:** `/crawler/js`
+**Endpoint:** `/crawler/js`  
+**Method:** `GET` (**no trailing slash!**)
 
-**Method:** `GET` or `POST`
-
-**Query Parameters:**
-- `url` (required): The URL of the web page to crawl
-- `waitTime` (optional): Time to wait in milliseconds after page load
-- `selectors` (optional): CSS selectors to extract after JavaScript execution
-- Other crawler options as described in HTML extraction
-
-**POST Body (optional):**
-```json
-{
-  "customScript": "// JavaScript to execute on the page"
-}
-```
+**Important:** Ensure the path is exact and does not include a trailing slash. Use the correct HTTP method (`GET`).
 
 **Example Request:**
 ```bash
-curl -X GET "http://localhost:8787/crawler/js?url=https://example.com&waitTime=2000"
+curl -X GET "http://localhost:8787/crawler/js?url=https://example.com"
 ```
 
 **Example Response:**
@@ -193,21 +148,8 @@ curl -X GET "http://localhost:8787/crawler/js?url=https://example.com&waitTime=2
 
 Execute custom JavaScript on a web page and return the result.
 
-**Endpoint:** `/crawler/execute`
-
-**Method:** `POST`
-
-**Query Parameters:**
-- `url` (required): The URL of the web page to crawl
-- Other crawler options as described in HTML extraction
-
-**POST Body (required):**
-```json
-{
-  "script": "function() { return { title: document.title, links: Array.from(document.querySelectorAll('a')).map(a => ({ text: a.textContent, href: a.href })) }; }",
-  "args": [] // Optional arguments to pass to the script
-}
-```
+**Endpoint:** `/crawler/execute`  
+**Method:** `POST` (**no trailing slash!**)
 
 **Example Request:**
 ```bash
@@ -236,38 +178,29 @@ curl -X POST "http://localhost:8787/crawler/execute?url=https://example.com" \
 
 ## Legacy Query Parameter-Based Endpoints
 
-For backward compatibility, the crawler also supports a legacy query parameter-based API style:
+For backward compatibility, the crawler also supports a legacy query parameter-based API style. **Paths must match exactly and use the correct method.**
 
-**Base Endpoint:** `/crawler`
-
-**Method:** `GET` or `POST`
-
-**Query Parameters:**
-- `url` (required): The URL of the web page to crawl
-- `type` (required): The extraction type, one of: `html`, `text`, `selector`, `js`, or `execute`
-- Other parameters as described in the respective RESTful endpoint sections
+**Base Endpoint:** `/crawler`  
+**Method:** `GET` (**no trailing slash!**)
 
 **Example Requests:**
 ```bash
-# HTML extraction
 curl -X GET "http://localhost:8787/crawler?url=https://example.com&type=html"
-
-# Text extraction
 curl -X GET "http://localhost:8787/crawler?url=https://example.com&type=text"
-
-# Selector extraction
 curl -X GET "http://localhost:8787/crawler?url=https://example.com&type=selector&selectors=h1,p,a"
-
-# JavaScript execution
-curl -X GET "http://localhost:8787/crawler?url=https://example.com&type=js&waitTime=2000"
-
-# Custom JavaScript execution
+curl -X GET "http://localhost:8787/crawler?url=https://example.com&type=js"
 curl -X POST "http://localhost:8787/crawler?url=https://example.com&type=execute" \
   -H "Content-Type: application/json" \
   -d '{"script": "function() { return { title: document.title, links: Array.from(document.querySelectorAll(\"a\")).map(a => ({ text: a.textContent, href: a.href })) }; }"}'
 ```
 
-The response formats are identical to those of the corresponding RESTful endpoints.
+## Troubleshooting: API route not found
+
+If you receive `{ "error": "API route not found" }`, check the following:
+- **Path must match exactly.** For example, use `/crawler/html`, not `/crawler/html/` (no trailing slash).
+- **Use the correct HTTP method.** For example, `/crawler/html` only supports `GET`.
+- **Check for typos or extra characters in the URL.**
+- **Legacy endpoints:** `/crawler` must be used without a trailing slash and with the correct `type` parameter.
 
 ## Error Handling
 

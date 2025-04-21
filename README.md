@@ -88,22 +88,24 @@ The crawler provides RESTful API endpoints and supports legacy query parameter-b
 
 #### 🌐 RESTful Endpoints
 
+**Important:** Paths must match exactly (no trailing slashes) and use the correct HTTP method.
+
 ```
-/crawler/html?url=https://example.com
-/crawler/text?url=https://example.com
-/crawler/selector?url=https://example.com&selectors=h1,p
-/crawler/js?url=https://example.com&waitTime=2000
-/crawler/execute?url=https://example.com
+GET  /crawler/html?url=https://example.com
+GET  /crawler/text?url=https://example.com
+GET  /crawler/selector?url=https://example.com&selectors=h1,p
+GET  /crawler/js?url=https://example.com
+POST /crawler/execute?url=https://example.com
 ```
 
 #### 🔄 Legacy Endpoints
 
 ```
-/crawler?url=https://example.com&type=html
-/crawler?url=https://example.com&type=text
-/crawler?url=https://example.com&type=selector&selectors=h1,p
-/crawler?url=https://example.com&type=js&waitTime=2000
-/crawler?url=https://example.com&type=execute
+GET  /crawler?url=https://example.com&type=html
+GET  /crawler?url=https://example.com&type=text
+GET  /crawler?url=https://example.com&type=selector&selectors=h1,p
+GET  /crawler?url=https://example.com&type=js
+POST /crawler?url=https://example.com&type=execute
 ```
 
 ### 📝 Usage Examples
@@ -178,7 +180,7 @@ npm install
 npm run dev
 ```
 
-Test the crawler endpoints at `http://localhost:8787/crawler/html?url=https://example.com`
+Test the crawler endpoints at `http://localhost:8787/crawler/html?url=https://example.com` (no trailing slash!)
 
 ### 🚢 Deployment
 
@@ -193,7 +195,15 @@ Alternatively, push to the main branch and let GitHub Actions handle the deploym
 
 ## 📚 Documentation
 
-For detailed API documentation, see [API.md](Information/API.md).
+For detailed API documentation, see [Information/API.md](Information/API.md).
+
+## ❗ Troubleshooting: API route not found
+
+If you receive `{ "error": "API route not found" }`, check the following:
+- **Path must match exactly.** For example, use `/crawler/html`, not `/crawler/html/` (no trailing slash).
+- **Use the correct HTTP method.** For example, `/crawler/html` only supports `GET`.
+- **Check for typos or extra characters in the URL.**
+- **Legacy endpoints:** `/crawler` must be used without a trailing slash and with the correct `type` parameter.
 
 ## 🧪 Testing
 
@@ -217,8 +227,3 @@ This project uses Cloudflare's Browser Rendering API with Puppeteer. The impleme
 - Per-request browser initialization to prevent "The receiver is not an RPC object" errors
 - Comprehensive resource cleanup to prevent memory leaks
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE-MIT](LICENSE-MIT) file for details.
-
-Additional licensing options are available under Apache License 2.0 - see the [LICENSE-APACHE](LICENSE-APACHE) file for details.

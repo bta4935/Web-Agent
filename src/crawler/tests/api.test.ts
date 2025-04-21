@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as apiModule from '../api';
+import * as apiModule from '../api/api';
 import { Crawler } from '../crawler';
 
 // Extract the exported functions from the API module

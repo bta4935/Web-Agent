@@ -1,175 +1,37 @@
-/**
- * Entry point for the Puppeteer Web Crawler
- * Provides routing logic for crawler endpoints
- */
+// src/crawler/api/index.ts
 
-import { Env } from './types';
+// Corrected import paths
+import { handleApiRequest } from './api/router';
+import type { Env } from './types';
 
-/**
- * Cloudflare Worker execution context
- */
-interface ExecutionContext {
-  waitUntil(promise: Promise<any>): void;
-  passThroughOnException(): void;
-}
-import {
-  handleHtmlExtraction,
-  handleTextExtraction,
-  handleSelectorExtraction,
-  handleJsExtraction,
-  handleCustomJsExecution
-} from './api';
-
-/**
- * Route handler for crawler endpoints
- * 
- * @param request - HTTP request
- * @param env - Environment variables including BROWSER binding
- * @returns Response from the appropriate handler
- */
-export async function handleRequest(request: Request, env: Env): Promise<Response> {
-  const url = new URL(request.url);
-  const pathname = url.pathname;
-  
-  try {
-    // Handle legacy query parameter-based endpoints (/crawler?url=...&type=...)
-    if (pathname === '/crawler') {
-      const extractionType = url.searchParams.get('type');
-      
-      if (!extractionType) {
-        return new Response(JSON.stringify({
-          error: 'Missing type parameter',
-          availableTypes: ['html', 'text', 'selector', 'js']
-        }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-      
-      // Forward to the appropriate RESTful endpoint handler
-      switch (extractionType) {
-        case 'html':
-          return await handleHtmlExtraction(request, env);
-          
-        case 'text':
-          return await handleTextExtraction(request, env);
-          
-        case 'selector':
-          return await handleSelectorExtraction(request, env);
-          
-        case 'js':
-          return await handleJsExtraction(request, env);
-          
-        case 'execute':
-          return await handleCustomJsExecution(request, env);
-          
-        default:
-          return new Response(JSON.stringify({
-            error: `Unknown extraction type: ${extractionType}`,
-            availableTypes: ['html', 'text', 'selector', 'js', 'execute']
-          }), {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' }
-          });
-      }
-    }
-    
-    // Handle RESTful endpoints (/crawler/html, /crawler/text, etc.)
-    if (pathname.startsWith('/crawler/')) {
-      // Extract the endpoint from the pathname
-      const endpoint = pathname.replace('/crawler/', '');
-      
-      // Route to the appropriate handler based on the endpoint
-      switch (endpoint) {
-        case 'html':
-          return await handleHtmlExtraction(request, env);
-          
-        case 'text':
-          return await handleTextExtraction(request, env);
-          
-        case 'selector':
-          return await handleSelectorExtraction(request, env);
-          
-        case 'js':
-          return await handleJsExtraction(request, env);
-          
-        case 'execute':
-          return await handleCustomJsExecution(request, env);
-          
-        default:
-          return new Response(JSON.stringify({
-            error: 'Unknown endpoint',
-            availableEndpoints: [
-              '/crawler/html',
-              '/crawler/text',
-              '/crawler/selector',
-              '/crawler/js',
-              '/crawler/execute'
-            ],
-            legacyEndpoint: '/crawler?url=...&type=[html|text|selector|js]'
-          }), {
-            status: 404,
-            headers: { 'Content-Type': 'application/json' }
-          });
-      }
-    }
-    
-    // If the request is not for any crawler endpoint
-    return new Response('Not Found', { status: 404 });
-  } catch (error) {
-    console.error('Error handling crawler request:', error);
-    return new Response(JSON.stringify({
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-}
-
-/**
- * Cloudflare Worker fetch handler
- * 
- * This function is the entry point for the Cloudflare Worker.
- * It routes requests to either the crawler functionality or passes them
- * to the original functionality, ensuring no interference.
- * 
- * @param request - HTTP request
- * @param env - Environment variables including BROWSER binding
- * @param ctx - Execution context
- * @returns Response from the appropriate handler
- */
+// Keep the rest of your code the same
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url);
-    
-    // If the request is for the crawler API, handle it with our crawler logic
-    if (url.pathname.startsWith('/crawler/')) {
-      return handleRequest(request, env);
-    }
-    
-    // Handle root path with url and type parameters (legacy format)
-    if (url.pathname === '/' && url.searchParams.has('url') && url.searchParams.has('type')) {
-      // Create a new request with /crawler path to reuse existing logic
-      const newUrl = new URL(request.url);
-      newUrl.pathname = '/crawler';
-      const newRequest = new Request(newUrl.toString(), request);
-      return handleRequest(newRequest, env);
-    }
-    
-    // Otherwise, this request is not for us, so we'll return a 404
-    // In a real integration, you might want to pass this to the original handler
-    return new Response('Not Found', { status: 404 });
-  }
-};
+	/**
+	 * The main fetch handler for the Worker.
+	 * It receives incoming HTTP requests and delegates them to the API router.
+	 * @param request - The incoming Request object.
+	 * @param env - The environment bindings for the Worker (e.g., BROWSER).
+	 * @param ctx - The execution context.
+	 * @returns A Promise that resolves to the Response.
+	 */
+	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+		// You could add top-level logic here if needed, for example:
+		// - Handling specific paths differently (like '/health' or static assets if not using framework features)
+		// - Adding global middleware (though the router handles API-specific logic now)
 
-/**
- * Export all crawler components for external use
- */
-export * from './types';
-export * from './crawler';
-export * from './extractors/html';
-export * from './extractors/text';
-export * from './extractors/selector';
-export * from './extractors/js';
-export * from './utils/browser';
+		// For this setup, we directly delegate all requests to the API request handler
+		return handleApiRequest(request, env);
+	},
+
+	// If you have other handlers like 'scheduled', 'queue', etc., add them here.
+	// Example:
+	// async scheduled(controller, env, ctx) {
+	//   // Handle scheduled event...
+	// }
+
+} satisfies ExportedHandler<Env>;
+
+// Important: If you have Durable Objects or other named exports needed by bindings,
+// ensure they are exported here as well.
+// For example:
+// export { MyDurableObject } from '../durableObject'; // Adjust path
