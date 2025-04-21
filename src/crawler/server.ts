@@ -6,7 +6,7 @@
  */
 
 import { Crawler } from './crawler';
-import { CrawlerOptions } from './types';
+import { CrawlerOptions, ExtractionOptions } from './types';
 
 // Import Puppeteer
 const puppeteer = require('@cloudflare/puppeteer');

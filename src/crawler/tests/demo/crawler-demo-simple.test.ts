@@ -108,14 +108,30 @@ describe('Crawler Demo with Mock Responses', () => {
     console.log(`Status: ${result.status}`);
     
     if (result.elements) {
-      console.log(`Number of selector results: ${result.elements.length}`);
-      
-      // Display the results for each selector
-      for (const element of result.elements) {
-        console.log(`\nSelector: ${element.selector}`);
-        console.log(`Found ${element.results.length} elements`);
-        if (element.results.length > 0) {
-          console.log(`First element text: ${element.results[0].text}`);
+      // Check if elements is an array (ElementExtractionResult[])
+      if (Array.isArray(result.elements)) {
+        console.log(`Number of selector results: ${result.elements.length}`);
+        
+        // Display the results for each selector
+        for (const element of result.elements) {
+          console.log(`\nSelector: ${element.selector}`);
+          console.log(`Found ${element.results.length} elements`);
+          if (element.results.length > 0) {
+            console.log(`First element text: ${element.results[0].text}`);
+          }
+        }
+      } else {
+        // Handle Record<string, string[]> case
+        const selectorCount = Object.keys(result.elements).length;
+        console.log(`Number of selector results: ${selectorCount}`);
+        
+        // Display results for each selector
+        for (const [selector, results] of Object.entries(result.elements)) {
+          console.log(`\nSelector: ${selector}`);
+          console.log(`Found ${results.length} elements`);
+          if (results.length > 0) {
+            console.log(`First element text: ${results[0]}`);
+          }
         }
       }
     }
