@@ -35,9 +35,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # Using default environment
+          # Updated command to simply 'deploy' - this replaces the deprecated 'publish' parameter
           command: deploy
-          # Enable publishing to Cloudflare
-          publish: true
-          # Create GitHub deployment
-          createGitHubDeployment: true
