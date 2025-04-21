@@ -1,4 +1,4 @@
-name = "webscraper"
+name = "web-agent"
 main = "dist/index.mjs"
 compatibility_date = "2023-10-30"
 
@@ -12,9 +12,9 @@ watch_dir = "src"
 
 # Uncomment for production environment
 # [env.production]
-# name = "webscraper-prod"
+# name = "web-agent-prod"
 # route = "your-domain.com/*"
 
 # Uncomment for development environment
 # [env.development]
-# name = "webscraper-dev"
+# name = "web-agent-dev"
