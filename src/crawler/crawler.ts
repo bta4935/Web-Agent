@@ -5,6 +5,16 @@
 
 import { CrawlerOptions, CrawlerResponse, ExtractionOptions } from './types';
 import { setupPage, closePage, extractPageMetadata } from './utils/browser';
+
+// Only import Puppeteer in production, not in tests
+let puppeteer: any;
+try {
+  // This will be used in production with Cloudflare Workers
+  puppeteer = require('@cloudflare/puppeteer');
+} catch (e) {
+  // In test environment, puppeteer won't be available
+  puppeteer = null;
+}
 import { extractHtml } from './extractors/html';
 import { extractText, TextExtractionOptions } from './extractors/text';
 import { extractBySelector, SelectorExtractionOptions } from './extractors/selector';
@@ -18,17 +28,18 @@ import {
  * Main Crawler class that provides methods for extracting content from web pages
  */
 export class Crawler {
-  private browser: any;
+  private browserBinding: any;
   private options: CrawlerOptions;
+  private isTestEnvironment: boolean;
   
   /**
    * Creates a new Crawler instance
    * 
-   * @param browser - Puppeteer Browser instance
+   * @param browserBinding - Cloudflare browser binding or mock browser for tests
    * @param options - Configuration options for the crawler
    */
-  constructor(browser: any, options: CrawlerOptions = {}) {
-    this.browser = browser;
+  constructor(browserBinding: any, options: CrawlerOptions = {}) {
+    this.browserBinding = browserBinding;
     this.options = {
       timeout: options.timeout ?? 30000,
       waitUntil: options.waitUntil ?? 'networkidle0',
@@ -38,6 +49,29 @@ export class Crawler {
       blockFonts: options.blockFonts ?? true,
       blockCSS: options.blockCSS ?? false
     };
+    
+    // Detect if we're in a test environment based on the browser binding
+    // In tests, the browser binding will be a mock with newPage method
+    this.isTestEnvironment = typeof this.browserBinding.newPage === 'function';
+  }
+  
+  /**
+   * Gets a browser instance - either launches a real one or returns the mock
+   * 
+   * @returns Puppeteer Browser instance or mock browser
+   */
+  private async getBrowser(): Promise<any> {
+    // In test environment, return the mock browser directly
+    if (this.isTestEnvironment) {
+      return this.browserBinding;
+    }
+    
+    // In production, launch a real browser using Puppeteer
+    if (puppeteer) {
+      return await puppeteer.launch(this.browserBinding);
+    }
+    
+    throw new Error('Puppeteer is not available and not in test environment');
   }
   
   /**
@@ -82,11 +116,15 @@ export class Crawler {
    * @returns Basic crawler response
    */
   async crawl(url: string): Promise<CrawlerResponse> {
+    let browser = null;
     let page = null;
     
     try {
+      // Get the browser (real or mock)
+      browser = await this.getBrowser();
+      
       // Set up the page with our options
-      page = await setupPage(this.browser, this.options);
+      page = await setupPage(browser, this.options);
       
       // Navigate to the URL
       await page.goto(url, {
@@ -101,6 +139,10 @@ export class Crawler {
     } finally {
       // Always close the page to free resources
       if (page) await closePage(page);
+      // Close the browser in production only, not in tests
+      if (browser && !this.isTestEnvironment) {
+        await browser.close();
+      }
     }
   }
   
@@ -112,11 +154,15 @@ export class Crawler {
    * @returns Crawler response with HTML content
    */
   async extractHtml(url: string, options: ExtractionOptions = {}): Promise<CrawlerResponse> {
+    let browser = null;
     let page = null;
     
     try {
+      // Get the browser (real or mock)
+      browser = await this.getBrowser();
+      
       // Set up the page with our options
-      page = await setupPage(this.browser, this.options);
+      page = await setupPage(browser, this.options);
       
       // Navigate to the URL
       await page.goto(url, {
@@ -142,6 +188,10 @@ export class Crawler {
     } finally {
       // Always close the page to free resources
       if (page) await closePage(page);
+      // Close the browser in production only, not in tests
+      if (browser && !this.isTestEnvironment) {
+        await browser.close();
+      }
     }
   }
   
@@ -153,11 +203,15 @@ export class Crawler {
    * @returns Crawler response with text content
    */
   async extractText(url: string, options: TextExtractionOptions = {}): Promise<CrawlerResponse> {
+    let browser = null;
     let page = null;
     
     try {
+      // Get the browser (real or mock)
+      browser = await this.getBrowser();
+      
       // Set up the page with our options
-      page = await setupPage(this.browser, this.options);
+      page = await setupPage(browser, this.options);
       
       // Navigate to the URL
       await page.goto(url, {
@@ -174,6 +228,8 @@ export class Crawler {
     } finally {
       // Always close the page to free resources
       if (page) await closePage(page);
+      // Close the browser
+      if (browser) await browser.close();
     }
   }
   
@@ -190,11 +246,15 @@ export class Crawler {
     selectors: string | string[],
     options: SelectorExtractionOptions = {}
   ): Promise<CrawlerResponse> {
+    let browser = null;
     let page = null;
     
     try {
+      // Get the browser (real or mock)
+      browser = await this.getBrowser();
+      
       // Set up the page with our options
-      page = await setupPage(this.browser, this.options);
+      page = await setupPage(browser, this.options);
       
       // Navigate to the URL
       await page.goto(url, {
@@ -211,6 +271,8 @@ export class Crawler {
     } finally {
       // Always close the page to free resources
       if (page) await closePage(page);
+      // Close the browser
+      if (browser) await browser.close();
     }
   }
   
@@ -225,11 +287,15 @@ export class Crawler {
     url: string,
     options: JsExtractionOptions = {}
   ): Promise<CrawlerResponse> {
+    let browser = null;
     let page = null;
     
     try {
+      // Get the browser (real or mock)
+      browser = await this.getBrowser();
+      
       // Set up the page with our options
-      page = await setupPage(this.browser, this.options);
+      page = await setupPage(browser, this.options);
       
       // Navigate to the URL with the specified wait strategy
       await page.goto(url, {
@@ -254,6 +320,10 @@ export class Crawler {
     } finally {
       // Always close the page to free resources
       if (page) await closePage(page);
+      // Close the browser in production only, not in tests
+      if (browser && !this.isTestEnvironment) {
+        await browser.close();
+      }
     }
   }
   
@@ -270,11 +340,15 @@ export class Crawler {
     selectors: string | string[],
     options: JsExtractionOptions = {}
   ): Promise<CrawlerResponse> {
+    let browser = null;
     let page = null;
     
     try {
+      // Get the browser (real or mock)
+      browser = await this.getBrowser();
+      
       // Set up the page with our options
-      page = await setupPage(this.browser, this.options);
+      page = await setupPage(browser, this.options);
       
       // Navigate to the URL with the specified wait strategy
       await page.goto(url, {
@@ -300,6 +374,10 @@ export class Crawler {
     } finally {
       // Always close the page to free resources
       if (page) await closePage(page);
+      // Close the browser in production only, not in tests
+      if (browser && !this.isTestEnvironment) {
+        await browser.close();
+      }
     }
   }
   
@@ -316,11 +394,15 @@ export class Crawler {
     scriptFn: Function | string,
     ...args: any[]
   ): Promise<CrawlerResponse & { result?: T }> {
+    let browser = null;
     let page = null;
     
     try {
+      // Get the browser (real or mock)
+      browser = await this.getBrowser();
+      
       // Set up the page with our options
-      page = await setupPage(this.browser, this.options);
+      page = await setupPage(browser, this.options);
       
       // Navigate to the URL
       await page.goto(url, {
@@ -340,6 +422,10 @@ export class Crawler {
     } finally {
       // Always close the page to free resources
       if (page) await closePage(page);
+      // Close the browser in production only, not in tests
+      if (browser && !this.isTestEnvironment) {
+        await browser.close();
+      }
     }
   }
 }
