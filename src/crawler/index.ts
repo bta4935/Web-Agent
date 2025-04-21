@@ -148,9 +148,35 @@ export default {
       return handleRequest(request, env);
     }
     
+    // Handle root path with url and type parameters (legacy format)
+    if (url.pathname === '/' && url.searchParams.has('url') && url.searchParams.has('type')) {
+      // Create a new request with /crawler path to reuse existing logic
+      const newUrl = new URL(request.url);
+      newUrl.pathname = '/crawler';
+      const newRequest = new Request(newUrl.toString(), request);
+      return handleRequest(newRequest, env);
+    }
+    
     // Otherwise, this request is not for us, so we'll return a 404
     // In a real integration, you might want to pass this to the original handler
-    return new Response('Not Found', { status: 404 });
+    return new Response(JSON.stringify({
+      error: 'Not Found',
+      message: 'Use one of the following endpoints:',
+      endpoints: [
+        '/?url=https://example.com&type=html',
+        '/?url=https://example.com&type=text',
+        '/?url=https://example.com&type=selector&selector=h1',
+        '/?url=https://example.com&type=js&code=document.title',
+        '/crawler/html?url=https://example.com',
+        '/crawler/text?url=https://example.com',
+        '/crawler/selector?url=https://example.com&selector=h1',
+        '/crawler/js?url=https://example.com&code=document.title',
+        '/crawler/execute?url=https://example.com&function=()=>{return document.title}'
+      ]
+    }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 };
 
