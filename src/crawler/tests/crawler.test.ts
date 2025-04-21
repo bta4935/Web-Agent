@@ -65,18 +65,23 @@ vi.mock('../extractors/js', () => ({
   })
 }));
 
-vi.mock('../utils/browser', () => ({
-  setupPage: vi.fn().mockImplementation(async (browser: any) => browser.newPage()),
-  closePage: vi.fn().mockResolvedValue(undefined),
-  extractPageMetadata: vi.fn().mockResolvedValue({
-    title: 'Test Page',
-    description: 'Test description'
-  })
-}));
+// Declare mockBrowser and mockPage at the top level for Vitest mock access
+let mockBrowser: any;
+let mockPage: any;
+
+vi.mock('../utils/browser', () => {
+  return {
+    launchBrowser: vi.fn().mockImplementation(() => mockBrowser),
+    setupPage: vi.fn().mockImplementation(async (browser: any) => browser.newPage()),
+    closePage: vi.fn().mockResolvedValue(undefined),
+    extractPageMetadata: vi.fn().mockResolvedValue({
+      title: 'Test Page',
+      description: 'Test description'
+    })
+  };
+});
 
 describe('Crawler Class', () => {
-  let mockBrowser: MockBrowser;
-  let mockPage: any;
   let crawler: Crawler;
   
   beforeEach(async () => {
