@@ -8,6 +8,16 @@ import puppeteer from '@cloudflare/puppeteer';
 import { CrawlerOptions } from '../types';
 
 /**
+ * Launches a browser instance with the provided binding
+ * 
+ * @param browserBinding - The browser binding from env.BROWSER
+ * @returns Puppeteer Browser instance
+ */
+export async function launchBrowser(browserBinding: any): Promise<any> {
+  return await puppeteer.launch(browserBinding);
+}
+
+/**
  * Sets up a new page with the specified options
  * 
  * @param browser - Puppeteer Browser instance

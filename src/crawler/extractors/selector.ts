@@ -37,107 +37,30 @@ export async function extractBySelector(
   // Convert single selector to array
   const selectorList = Array.isArray(selectors) ? selectors : [selectors];
   
-  // Set default options
-  const opts = {
-    includeAttributes: options.includeAttributes ?? true,
-    includePosition: options.includePosition ?? true,
-    includeHtml: options.includeHtml ?? true,
-    attributes: options.attributes ?? [],
-    visibleOnly: options.visibleOnly ?? true
-  };
-  
-  return await page.evaluate((selectors: string[], options: SelectorExtractionOptions) => {
-    /**
-     * Checks if an element is visible
-     */
-    function isVisible(element: Element): boolean {
-      if (!element) return false;
-      
-      const style = window.getComputedStyle(element);
-      if (style.display === 'none') return false;
-      if (style.visibility !== 'visible') return false;
-      if (parseFloat(style.opacity) < 0.1) return false;
-      
-      const rect = element.getBoundingClientRect();
-      if (rect.width <= 1 || rect.height <= 1) return false;
-      
-      return true;
-    }
-    
-    /**
-     * Extracts attributes from an element
-     */
-    function extractAttributes(element: Element, attributeList: string[] = []): Array<{name: string, value: string}> {
-      const attributes: Array<{name: string, value: string}> = [];
-      
-      // If specific attributes are requested, extract only those
-      if (attributeList && attributeList.length > 0) {
-        attributeList.forEach(attr => {
-          const value = element.getAttribute(attr);
-          if (value !== null) {
-            attributes.push({ name: attr, value });
-          }
-        });
-      } else {
-        // Otherwise extract all attributes
-        Array.from(element.attributes).forEach(attr => {
-          attributes.push({ name: attr.name, value: attr.value });
-        });
-      }
-      
-      return attributes;
-    }
-    
-    /**
-     * Gets position and dimensions of an element
-     */
-    function getElementPosition(element: Element): {top: number, left: number, width: number, height: number} {
-      const rect = element.getBoundingClientRect();
-      return {
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-        height: rect.height
-      };
-    }
-    
-    // Process each selector
-    return selectors.map(selector => {
+  // Simplified implementation to avoid serialization issues
+  return await page.evaluate((selectors: string[]) => {
+    return selectors.map((selector: string) => {
       try {
         // Find all elements matching the selector
         const elements = Array.from(document.querySelectorAll(selector));
         
-        // Filter elements if visibleOnly is true
-        const filteredElements = options.visibleOnly
-          ? elements.filter(el => isVisible(el))
-          : elements;
-        
-        // Extract data from each element
-        const results = filteredElements.map(element => {
-          const result: any = {
-            text: element.textContent?.trim() || ''
+        // Extract basic data from each element
+        const results = elements.map(element => {
+          // Get position information
+          const rect = element.getBoundingClientRect();
+          
+          return {
+            text: element.textContent?.trim() || '',
+            html: element.innerHTML,
+            attributes: Array.from(element.attributes).map((attr: Attr) => ({
+              name: attr.name,
+              value: attr.value
+            })),
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height
           };
-          
-          // Include HTML if requested
-          if (options.includeHtml) {
-            result.html = element.innerHTML;
-          }
-          
-          // Include attributes if requested
-          if (options.includeAttributes) {
-            result.attributes = extractAttributes(element, options.attributes);
-          }
-          
-          // Include position if requested
-          if (options.includePosition) {
-            const position = getElementPosition(element);
-            result.top = position.top;
-            result.left = position.left;
-            result.width = position.width;
-            result.height = position.height;
-          }
-          
-          return result;
         });
         
         return {
@@ -149,11 +72,11 @@ export async function extractBySelector(
         return {
           selector,
           results: [],
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: String(error)
         };
       }
     });
-  }, selectorList, opts);
+  }, selectorList);
 }
 
 /**

@@ -14,6 +14,7 @@ A powerful, high-performance web crawling solution deployed on Cloudflare Worker
 - **Edge Computing**: Deployed on Cloudflare's global network for optimal performance
 - **Automated Deployment**: Continuous deployment using GitHub Actions
 - **Multiple Extraction Methods**: HTML, text, selector-based, and JavaScript execution
+- **Browser Rendering**: Properly configured browser binding for Cloudflare Workers
 
 ## 🔧 Wrangler Action
 
@@ -78,6 +79,8 @@ The deployment is triggered on pushes to both the `main` and `Render-Version` br
 - Comprehensive error handling
 - Resource blocking capabilities
 - Flexible configuration options
+- Proper browser binding initialization with Puppeteer
+- Per-request browser instance management
 
 ### 🔌 API Endpoints
 
@@ -203,6 +206,16 @@ npm test
 # Run tests with coverage
 npm test -- --coverage
 ```
+
+## 🔧 Browser Binding Configuration
+
+This project uses Cloudflare's Browser Rendering API with Puppeteer. The implementation includes:
+
+- Proper ESM import syntax for Puppeteer: `import puppeteer from '@cloudflare/puppeteer'`
+- Browser binding configuration in `wrangler.toml`
+- Browser instance management with the `launchBrowser` utility function
+- Per-request browser initialization to prevent "The receiver is not an RPC object" errors
+- Comprehensive resource cleanup to prevent memory leaks
 
 ## 📄 License
 
