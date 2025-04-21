@@ -3,8 +3,8 @@
  * Using any types to avoid compilation issues with Puppeteer's private identifiers
  */
 
-// Import Puppeteer but avoid type issues by using require
-const puppeteer = require('@cloudflare/puppeteer');
+// Import Puppeteer properly for Cloudflare Workers
+import puppeteer from '@cloudflare/puppeteer';
 import { CrawlerOptions } from '../types';
 
 /**

@@ -1,5 +1,5 @@
 name = "webagent"
-main = "src/crawler/index.ts"
+main = "src/crawler/test-browser.ts"
 compatibility_date = "2024-09-23"
 account_id = "2422a782bc0ae2970c01ce7ccb3aea86"
 compatibility_flags = ["nodejs_compat"]
