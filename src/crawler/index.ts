@@ -159,24 +159,7 @@ export default {
     
     // Otherwise, this request is not for us, so we'll return a 404
     // In a real integration, you might want to pass this to the original handler
-    return new Response(JSON.stringify({
-      error: 'Not Found',
-      message: 'Use one of the following endpoints:',
-      endpoints: [
-        '/?url=https://example.com&type=html',
-        '/?url=https://example.com&type=text',
-        '/?url=https://example.com&type=selector&selector=h1',
-        '/?url=https://example.com&type=js&code=document.title',
-        '/crawler/html?url=https://example.com',
-        '/crawler/text?url=https://example.com',
-        '/crawler/selector?url=https://example.com&selector=h1',
-        '/crawler/js?url=https://example.com&code=document.title',
-        '/crawler/execute?url=https://example.com&function=()=>{return document.title}'
-      ]
-    }), {
-      status: 404,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response('Not Found', { status: 404 });
   }
 };
 
