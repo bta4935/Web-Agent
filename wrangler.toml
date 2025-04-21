@@ -4,6 +4,9 @@ compatibility_date = "2024-09-23"
 account_id = "2422a782bc0ae2970c01ce7ccb3aea86"
 compatibility_flags = ["nodejs_compat"]
 
+[browser]
+binding = "BROWSER"
+
 [vars]
 # Define your environment variables here
 # EXAMPLE_VAR = "example-value"
