@@ -1,6 +1,6 @@
 Okay, let's refactor the `api.ts` file into smaller, more manageable modules. This improves organization and makes the code easier to maintain.
 
-We'll break it down into these logical parts:
+We'll break it down innpm install --save-dev shxto these logical parts:
 
 1.  **`errors.ts`**: Handles custom error types and the generic error handler.
 2.  **`options.ts`**: Contains functions for validating the URL and parsing various options from query parameters.
