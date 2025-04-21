@@ -23,7 +23,7 @@
 	"type": "module",
 	"main": "dist/index.mjs",
 	"scripts": {
-		"build": "npx ncc build ./src/index.ts && mv ./dist/index.js ./dist/index.mjs",
+		"build": "npx ncc build ./src/crawler/index.ts && move .\\dist\\index.js .\\dist\\index.mjs",
 		"build:crawler": "tsc",
 		"dev:crawler": "wrangler dev --local src/crawler/index.ts",
 		"deploy:crawler": "wrangler deploy src/crawler/index.ts",
