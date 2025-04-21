@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { handleRequest } from '../../index';
+import { handleRequest } from '../../../crawler/index';
 import * as apiModule from '../../api';
 
 // Mock the API handlers
