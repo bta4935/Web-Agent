@@ -1,3 +1,5 @@
+import type { Ai } from '@cloudflare/workers-types';
+
 /**
  * Type definitions for the Puppeteer Web Crawler
  */
@@ -7,6 +9,7 @@
  */
 export interface Env {
   BROWSER: any; // Cloudflare Browser binding
+  AI: Ai;       // Workers AI binding
 }
 
 /**
@@ -73,6 +76,8 @@ export interface CrawlerResponse {
   };
   /** Generic result property for custom functions */
   result?: any;
+  /** AI-formatted Markdown output (optional) */
+  markdown?: string;
 }
 
 /**
@@ -108,8 +113,8 @@ export interface ElementExtractionResult {
 export interface CrawlerRequestParams {
   /** URL to crawl */
   url: string;
-  /** Type of extraction to perform */
-  type: 'html' | 'text' | 'selector' | 'js';
+  /** Type of extraction to perform (now includes 'xml') */
+  type: 'html' | 'text' | 'selector' | 'js' | 'execute' | 'xml';
   /** CSS selectors to extract (for selector extraction) */
   selectors?: string[];
   /** Wait time after JS execution (for js extraction) */

@@ -118,7 +118,7 @@ async function runLocalCrawlerDemo() {
     // Example 4: Extract content after JavaScript execution
     console.log('\n--- Example 4: JavaScript Execution ---');
     const jsResult = await crawler.extractAfterJsExecution(localUrl, {
-      waitTime: 3000 // Wait for the dynamic content to load
+      // Removed waitTime: 3000 as it is not a valid ExtractionOptions property
     });
     
     console.log(`Status: ${jsResult.status}`);

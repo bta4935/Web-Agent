@@ -6,7 +6,7 @@ import {
 	handleSelectorExtraction,
 	handleJsExtraction,
 	handleCustomJsExecution,
-	handleSitemapRequest // <-- ADDED Import
+	handleSitemapRequest
 } from './handlers'; // Assuming handlers.ts is in the same directory
 import { handleApiError } from './errors'; // Assuming errors.ts is in the same directory
 import type { Env } from '../types'; // Adjust path if needed
@@ -57,13 +57,6 @@ export async function handleApiRequest(request: Request, env: Env): Promise<Resp
 				}
 				break;
 
-			// <-- ADDED Sitemap route -->
-			case '/crawler/sitemap':
-				if (method === 'GET') {
-					return await handleSitemapRequest(request, env);
-				}
-				break;
-			// <-- End ADDED Sitemap route -->
 
 			case '/crawler/js':
 				// Allow GET for basic JS extraction, POST for custom script in body

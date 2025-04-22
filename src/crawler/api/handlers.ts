@@ -15,8 +15,6 @@ import {
 import { XMLParser, XMLValidator } from 'fast-xml-parser'; // <-- ADDED: Import XML Parser
 import type { Env } from '../types'; // Adjust path if needed, ensure Env includes BROWSER
 
-// ... (keep existing handleHtmlExtraction, handleTextExtraction, etc. functions) ...
-// ... (previous handlers like handleHtmlExtraction, handleTextExtraction etc. remain here) ...
 
 /**
  * API handler for HTML extraction
@@ -50,12 +48,12 @@ export async function handleTextExtraction(request: Request, env: Env): Promise<
 		const url = new URL(request.url); // UPDATED
 		const targetUrl = validateUrl(url.searchParams.get('url'));
 		const crawlerOptions = parseCrawlerOptions(url);
-		const extractionOptions = parseTextExtractionOptions(url);
+		const extractionOptions = parseExtractionOptions(url);
 
 		const crawler = new Crawler(env.BROWSER, crawlerOptions); // UPDATED
 		const result = await crawler.extractText(targetUrl, extractionOptions);
 
-		// UPDATED: Use standard Response
+		// Return only the extraction result (no markdown)
 		return new Response(JSON.stringify(result), {
 			headers: { 'Content-Type': 'application/json' }
 		});
@@ -147,27 +145,28 @@ export async function handleJsExtraction(request: Request, env: Env): Promise<Re
 		};
 
 		if (selectors) {
-			// Always include 'elements', even if extractionResult is not an array (e.g. mock returns object)
 			responseData.elements = Array.isArray(extractionResult) ? extractionResult : [extractionResult];
-			if (outputType === 'text') {
-				responseData.text = Array.isArray(extractionResult)
-					? extractionResult.map(el => el.results.map((r: { text: string }) => r.text).join(' ')).join('\n\n')
-					: (extractionResult && typeof extractionResult.text !== 'undefined' ? extractionResult.text : '');
+			// If outputType is 'text', combine text from all elements
+			if (outputType === 'text' && Array.isArray(extractionResult)) {
+				const rawTextForMarkdown = extractionResult.map((el: any) =>
+					Array.isArray(el.results) ? el.results.map((r: { text: string }) => r.text).join(' ') : ''
+				).join('\n\n');
+				responseData.text = rawTextForMarkdown;
 			}
 			if (outputType === 'html') {
-				responseData.html = Array.isArray(extractionResult) ? '' : (extractionResult && typeof extractionResult.html !== 'undefined' ? extractionResult.html : '');
+				responseData.html = '';
 			}
-		} else if (extractionResult && typeof extractionResult === 'object') {
-			if (typeof extractionResult.html !== 'undefined') {
+		} else if (extractionResult && typeof extractionResult === 'object' && !Array.isArray(extractionResult)) {
+			if (outputType === 'html' && typeof extractionResult.html !== 'undefined') {
 				responseData.html = extractionResult.html;
 			}
-			if (typeof extractionResult.text !== 'undefined') {
-				responseData.text = extractionResult.text;
+			if (outputType === 'text' && typeof extractionResult.text !== 'undefined') {
+				const rawTextForMarkdown = extractionResult.text;
+				responseData.text = rawTextForMarkdown;
 			}
 		}
 
-
-		// UPDATED: Use standard Response
+		// Return only the extraction result (no markdown)
 		return new Response(JSON.stringify(responseData), {
 			headers: { 'Content-Type': 'application/json' }
 		});

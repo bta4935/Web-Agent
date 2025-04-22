@@ -106,19 +106,21 @@ export function parseTextExtractionOptions(url: URL): TextExtractionOptions {
  */
 export function parseSelectorExtractionOptions(url: URL): SelectorExtractionOptions {
 	const options = parseExtractionOptions(url) as SelectorExtractionOptions;
-	const includeAttributes = url.searchParams.get('includeAttributes');
 	const includePosition = url.searchParams.get('includePosition');
 	const includeHtml = url.searchParams.get('includeHtml');
 	const visibleOnly = url.searchParams.get('visibleOnly');
-	const attributes = url.searchParams.get('attributes');
+	const attribute = url.searchParams.get('attribute');
 
-	if (includeAttributes !== null) options.includeAttributes = includeAttributes === 'true';
 	if (includePosition !== null) options.includePosition = includePosition === 'true';
 	if (includeHtml !== null) options.includeHtml = includeHtml === 'true';
 	if (visibleOnly !== null) options.visibleOnly = visibleOnly === 'true';
 
-	if (attributes) {
-		options.attributes = attributes.split(',').map(attr => attr.trim());
+	if (attribute) {
+		options.includeAttributes = true;
+		options.attributes = attribute.split(',').map(attr => attr.trim());
+	} else {
+		options.includeAttributes = false;
+		options.attributes = [];
 	}
 
 	return options;
