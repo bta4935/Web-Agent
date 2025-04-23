@@ -146,16 +146,24 @@ curl -X GET "http://localhost:8787/crawler/js?url=https://example.com"
 
 ### Custom JavaScript Execution
 
-Execute custom JavaScript on a web page and return the result.
+Execute a predefined extraction function on a web page and return the result.
 
 **Endpoint:** `/crawler/execute`  
 **Method:** `POST` (**no trailing slash!**)
+
+**Allowed Functions:**
+Only the following function names are supported. You must specify the function name in the request body as `fnName`.
+
+| Function Name   | Description                                                           |
+|----------------|-----------------------------------------------------------------------|
+| extractTitle   | Returns the page's `<title>` as a string                              |
+| extractMeta    | Returns an array of all `<meta>` tag `content` attributes on the page |
 
 **Example Request:**
 ```bash
 curl -X POST "http://localhost:8787/crawler/execute?url=https://example.com" \
   -H "Content-Type: application/json" \
-  -d '{"script": "function() { return { title: document.title, links: Array.from(document.querySelectorAll(\"a\")).map(a => ({ text: a.textContent, href: a.href })) }; }"}'
+  -d '{"fnName": "extractTitle", "args": []}'
 ```
 
 **Example Response:**
@@ -164,17 +172,32 @@ curl -X POST "http://localhost:8787/crawler/execute?url=https://example.com" \
   "url": "https://example.com",
   "status": 200,
   "timestamp": 1650465789123,
-  "result": {
-    "title": "Example Domain",
-    "links": [
-      {
-        "text": "More information...",
-        "href": "https://www.iana.org/domains/example"
-      }
-    ]
-  }
+  "result": "Example Domain"
 }
 ```
+
+**Example Request for Meta Tags:**
+```bash
+curl -X POST "http://localhost:8787/crawler/execute?url=https://example.com" \
+  -H "Content-Type: application/json" \
+  -d '{"fnName": "extractMeta", "args": []}'
+```
+
+**Example Response:**
+```json
+{
+  "url": "https://example.com",
+  "status": 200,
+  "timestamp": 1650465789123,
+  "result": [
+    "Example Domain",
+    "Another meta content"
+  ]
+}
+```
+
+> **Note:**
+> You cannot execute arbitrary JavaScript. Only the above functions are supported for security and stability reasons. If you need additional extraction logic, contact the API maintainer to request a new allowed function.
 
 ## Legacy Query Parameter-Based Endpoints
 

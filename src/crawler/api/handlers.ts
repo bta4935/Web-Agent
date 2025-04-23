@@ -190,19 +190,18 @@ export async function handleCustomJsExecution(request: Request, env: Env): Promi
 		const targetUrl = validateUrl(url.searchParams.get('url'));
 		const crawlerOptions = parseCrawlerOptions(url);
 
-		let scriptFn: string;
+		let fnName: string;
 		let args: any[] = [];
 
 		try {
-			// UPDATED: Use standard request object and check body
 			if (!request.body) {
-				throw new ValidationError('Request body is required for custom script execution');
+				throw new ValidationError('Request body is required for custom function execution');
 			}
-			const body = await request.json<{ script?: string; args?: any[] }>(); // Use standard request.json()
-			if (!body || typeof body.script !== 'string') {
-				throw new ValidationError('Script is required in request body');
+			const body = await request.json<{ fnName?: string; args?: any[] }>();
+			if (!body || typeof body.fnName !== 'string') {
+				throw new ValidationError('fnName is required in request body');
 			}
-			scriptFn = body.script;
+			fnName = body.fnName;
 			if (Array.isArray(body.args)) {
 				args = body.args;
 			}
@@ -216,7 +215,7 @@ export async function handleCustomJsExecution(request: Request, env: Env): Promi
 		}
 
 		const crawler = new Crawler(env.BROWSER, crawlerOptions); // UPDATED
-		const result = await crawler.executeCustomFunction(targetUrl, scriptFn, ...args);
+		const result = await crawler.executeCustomFunction(targetUrl, fnName, ...args);
 
 		// UPDATED: Use standard Response
 		return new Response(JSON.stringify(result), {

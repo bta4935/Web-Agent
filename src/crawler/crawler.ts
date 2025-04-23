@@ -172,7 +172,7 @@ export class Crawler {
     return [];
   }
 
-  async executeCustomFunction(url: string, scriptFn: string, ...args: any[]): Promise<Partial<CrawlerResponse>> {
+  async executeCustomFunction(url: string, fnName: string, ...args: any[]): Promise<Partial<CrawlerResponse>> {
     let browser: Browser | null = null;
     try {
       const { browser: launchedBrowser, page } = await this._getBrowserPage();
@@ -182,22 +182,23 @@ export class Crawler {
       const response = await page.goto(url, { waitUntil, timeout });
       await (page as any).waitForSelector('body', { timeout: 10000 });
 
-      // Evaluate the script in the page context
-      const result = await page.evaluate((fnStr: string, ...args: unknown[]) => {
-        // Turn the string into a function
-        // Accepts both "function() { ... }" and "() => { ... }"
-        let fn;
-        try {
-          fn = eval('(' + fnStr + ')');
-        } catch (e) {
-          return { error: 'Script parse error: ' + String(e) };
-        }
-        try {
-          return fn.apply(null, args);
-        } catch (e) {
-          return { error: 'Script runtime error: ' + String(e) };
-        }
-      }, scriptFn, ...args);
+      // Only allow predefined safe extraction functions
+      const allowedFunctions: Record<string, (...args: any[]) => any> = {
+        extractTitle: () => document.title,
+        extractMeta: () => Array.from(document.querySelectorAll('meta')).map(m => m.content),
+        // Add more as needed
+      };
+      if (!(fnName in allowedFunctions)) {
+        return { result: null, url, status: 400, error: 'Function not allowed', timestamp: Date.now() };
+      }
+      const result = await page.evaluate((fnKey: string, ...args: unknown[]) => {
+        const allowed: Record<string, (...args: any[]) => any> = {
+          extractTitle: () => document.title,
+          extractMeta: () => Array.from(document.querySelectorAll('meta')).map(m => m.content),
+          // Add more as needed
+        };
+        return allowed[fnKey](...args);
+      }, fnName, ...args);
 
       return { result, url, status: (response as any)?.status?.() ?? 200, timestamp: Date.now() };
     } catch (error: any) {
